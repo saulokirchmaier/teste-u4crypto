@@ -22,11 +22,19 @@ export class UserEntity {
     email: string,
     address: string,
     role?: RoleType,
+    active?: boolean,
+    updatedAt?: Date,
+    deletedAt?: Date,
+    vehicle?: VehicleEntity,
   ) {
     this.fullName = fullName;
     this.email = email;
     this.address = address;
     this.role = role;
+    this.active = active;
+    this.updatedAt = updatedAt;
+    this.deletedAt = deletedAt;
+    this.vehicle = vehicle;
   }
 
   @PrimaryGeneratedColumn()
@@ -35,17 +43,17 @@ export class UserEntity {
   @Column({ name: 'full_name', nullable: false })
   fullName: string;
 
-  @Column({ name: 'email', nullable: false, unique: true })
+  @Column({ nullable: false, unique: true })
   email: string;
 
-  @Column({ name: 'address', nullable: false, unique: true })
+  @Column({ default: null, name: 'address' })
   address: string;
 
   @Column({ default: RoleType.client, enum: RoleType, type: 'enum' })
   role?: RoleType;
 
   @Column({ default: true })
-  active?: RoleType;
+  active?: boolean;
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;

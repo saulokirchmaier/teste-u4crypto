@@ -10,9 +10,11 @@ export const initDb = async (): Promise<Connection> => {
     host: 'localhost',
     port: 5432,
     username: 'postgres',
-    password: 'kirchteix',
-    database: 'u4crypto',
+    password: '1234',
+    database: 'u4c',
     entities,
+    logging: ['error'],
+    logger: 'advanced-console',
   });
 
   await con.synchronize(true);
