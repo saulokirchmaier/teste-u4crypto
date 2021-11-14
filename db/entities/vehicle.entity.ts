@@ -10,17 +10,26 @@ import {
 } from 'typeorm';
 import { UserEntity } from '.';
 
-
 @Entity({name: 'vehicle'})
 export class VehicleEntity {
+  constructor(
+    plate: string,
+    model: string,
+    userId: number,
+  ) {
+    this.plate = plate;
+    this.model = model;
+    this.userId = userId;
+  }
+
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ name: 'plate', type: String,  nullable: false })
   plate: string;
 
-  @Column({ name: 'type', type: String,})
-  type: string;
+  @Column({ name: 'model', type: String,})
+  model: string;
 
   @Column({ name: 'user_id', type: Number })
   userId: number;

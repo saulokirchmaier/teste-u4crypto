@@ -9,63 +9,90 @@ export const userController = (con: Connection): Array<ServerRoute> => {
     {
       method: 'GET',
       path: '/user',
-      handler: async (request: Request, response: ResponseToolkit, err?: Error) => {
-        return userRepo.find({
-          select: ['id', 'fullName', 'email', 'address', 'role', 'vehicle'],
-          where: { active: true }
-        });
+      handler: async (request: Request, res: ResponseToolkit, err?: Error) => {
+        try {
+          const doc = await userRepo.find({
+            select: ['id', 'fullName', 'email', 'document', 'address', 'role', 'vehicle'],
+            where: { active: true },
+          });
+
+          return res.response(doc);
+        } catch ({ message }) {
+          return res.response(message);
+        }
+
       }
     },
     {
       method: 'POST',
       path: '/user',
-      handler: async ({ payload }: Request, response: ResponseToolkit, err?: Error) => {
-        const { fullName, email, address } = payload as Partial<UserEntity>;
-        const user: Partial<UserEntity> = new UserEntity(fullName, email, address);
+      handler: async ({ payload }: Request, res: ResponseToolkit, err?: Error) => {
+        try {
+          const { fullName, email, document, address } = payload as Partial<UserEntity>;
+          const user: Partial<UserEntity> = new UserEntity(fullName, email, document, address);
 
-        return userRepo.save<Partial<UserEntity>>(user);
+          const doc = await userRepo.save<Partial<UserEntity>>(user);
+
+          return res.response(doc).code(201);
+        } catch ({ message }) {
+          return res.response(message);
+        }
       }
     },
     {
       method: 'GET',
       path: '/user/{id}',
-      handler: async ({ params }: Request, response: ResponseToolkit, err?: Error) => {
-        const { id } = params;
-        const active = true;
-        const user = await userRepo.findOne({ where: { id, active: true } });
+      handler: async ({ params }: Request, res: ResponseToolkit, err?: Error) => {
+        try {
+          const { id } = params;
+          const doc = await userRepo.findOne({
+            select: ['id', 'fullName', 'email', 'document', 'address', 'role', 'vehicle'],
+            where: { id, active: true }
+          });
 
-        return user;
+          return res.response(doc);
+        } catch ({ message }) {
+          return res.response(message);
+        }
       }
     },
     {
       method: 'PATCH',
       path: '/user/{id}',
-      handler: async ({ payload, params }: Request, response: ResponseToolkit, err?: Error) => {
-        const { id } = params;
-        const { fullName, address, email } = payload as Partial<UserEntity>;
+      handler: async ({ payload, params }: Request, res: ResponseToolkit, err?: Error) => {
+        try {
+          const { id } = params;
+          const { fullName, address, email } = payload as Partial<UserEntity>;
 
-        const user = await userRepo.findOneOrFail({ where: { id, active: true } });
-        user.fullName = fullName;
-        user.address = address;
-        user.email = email;
+          const user = await userRepo.findOneOrFail({ where: { id, active: true } });
+          user.fullName = fullName;
+          user.address = address;
+          user.email = email;
 
-        await userRepo.update(id, user);
+          await userRepo.update(id, user);
 
-        return user;
+          return res.response(user);
+        } catch ({ message }) {
+          return res.response(message);
+        }
       }
     },
     {
       method: 'DELETE',
       path: '/user/{id}',
-      handler: async ({ params }: Request, response: ResponseToolkit, err?: Error) => {
-        const { id } = params;
-        const user = await userRepo.findOneOrFail(id);
-        user.active = false;
-        user.deletedAt = new Date();
+      handler: async ({ params }: Request, res: ResponseToolkit, err?: Error) => {
+        try {
+          const { id } = params;
+          const user = await userRepo.findOneOrFail(id);
+          user.active = false;
+          user.deletedAt = new Date();
 
-        await userRepo.update(id, user);
+          await userRepo.update(id, user);
 
-        return 'OK';
+          return res.response();
+        } catch ({ message }) {
+          return res.response(message);
+        }
       }
     },
   ]

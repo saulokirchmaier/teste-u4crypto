@@ -20,6 +20,7 @@ export class UserEntity {
   constructor(
     fullName: string,
     email: string,
+    document: number,
     address: string,
     role?: RoleType,
     active?: boolean,
@@ -29,6 +30,7 @@ export class UserEntity {
   ) {
     this.fullName = fullName;
     this.email = email;
+    this.document = document;
     this.address = address;
     this.role = role;
     this.active = active;
@@ -45,6 +47,9 @@ export class UserEntity {
 
   @Column({ nullable: false, unique: true })
   email: string;
+
+  @Column({nullable: false, unique: true })
+  document: number;
 
   @Column({ default: null, name: 'address' })
   address: string;
