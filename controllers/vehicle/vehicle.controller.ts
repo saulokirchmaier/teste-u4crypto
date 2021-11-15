@@ -38,9 +38,9 @@ export const vehicleController = (con: Connection): Array<ServerRoute> => {
           const doc = await vehicleRepo.save<Partial<VehicleEntity>>(vehicle);
 
 
-          activeUser.vehicle = doc;
+          // activeUser.vehicle = doc;
 
-          await userRepo.update(userId, activeUser)
+          // await userRepo.update(userId, activeUser)
 
           return res.response(doc);
         } catch ({ message }) {

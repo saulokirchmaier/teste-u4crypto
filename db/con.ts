@@ -1,10 +1,10 @@
 import 'reflect-metadata';
 import { Connection, createConnection } from 'typeorm';
 
-import { UserEntity, VehicleEntity } from './entities';
+import { UserEntity, AccidentEntity, UserAccidentEntity } from './entities';
 
 export const initDb = async (): Promise<Connection> => {
-  const entities = [UserEntity, VehicleEntity];
+  const entities = [UserEntity, AccidentEntity, UserAccidentEntity];
   const con = await createConnection({
     type: 'postgres',
     host: 'localhost',

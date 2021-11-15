@@ -1,7 +1,7 @@
 import * as Hapi from '@hapi/hapi';
 import { Server, ResponseToolkit, Request } from 'hapi';
 import { Connection } from 'typeorm';
-import { userController, vehicleController } from './controllers';
+import { userController, accidentController } from './controllers';
 
 import { initDb } from './db';
 
@@ -23,7 +23,7 @@ const initi = async () => {
 
   server.route([
     ...userController(con),
-    ...vehicleController(con),
+    ...accidentController(con),
   ]);
 
   await server.start().then();

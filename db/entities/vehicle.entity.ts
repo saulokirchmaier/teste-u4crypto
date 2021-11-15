@@ -43,7 +43,7 @@ export class VehicleEntity {
   @DeleteDateColumn({ default: null, type: 'timestamp', name: 'deleted_at' })
   deletedAt: Date;
 
-  @OneToOne(() => UserEntity, (user: UserEntity) => user.vehicle)
-  @JoinColumn({ name: 'user_id'})
-  user: UserEntity;
+  // @OneToOne(() => UserEntity, (user: UserEntity) => user.vehicle)
+  // @JoinColumn({ name: 'user_id'})
+  // user: UserEntity;
 }

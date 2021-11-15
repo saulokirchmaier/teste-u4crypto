@@ -5,12 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  OneToOne,
-  JoinColumn
+  OneToMany
 } from 'typeorm';
-import { VehicleEntity } from '.';
+import { UserAccidentEntity } from './';
 
-enum RoleType {
+export enum RoleType {
   client = 'client',
   engaged = 'engaded',
 }
@@ -22,25 +21,29 @@ export class UserEntity {
     email: string,
     document: number,
     address: string,
+    vehiclePlate: string,
+    vehicleModel: string,
+    // id?: number,
     role?: RoleType,
     active?: boolean,
     updatedAt?: Date,
     deletedAt?: Date,
-    vehicle?: VehicleEntity,
   ) {
     this.fullName = fullName;
     this.email = email;
     this.document = document;
     this.address = address;
     this.role = role;
+    this.vehiclePlate = vehiclePlate;
+    this.vehicleModel = vehicleModel;
+    // this.id = id;
     this.active = active;
     this.updatedAt = updatedAt;
     this.deletedAt = deletedAt;
-    this.vehicle = vehicle;
   }
 
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
 
   @Column({ name: 'full_name', nullable: false })
   fullName: string;
@@ -57,6 +60,12 @@ export class UserEntity {
   @Column({ default: RoleType.client, enum: RoleType, type: 'enum' })
   role?: RoleType;
 
+  @Column({ name: 'vehicle_plate', unique: true })
+  vehiclePlate: string;
+
+  @Column({ name: 'vehicle_model' })
+  vehicleModel: string;
+
   @Column({ default: true })
   active?: boolean;
 
@@ -69,7 +78,6 @@ export class UserEntity {
   @DeleteDateColumn({ default: null, type: 'timestamp', name: 'deleted_at' })
   deletedAt?: Date;
 
-  @OneToOne(() => VehicleEntity, (vehicle: VehicleEntity) => vehicle.user)
-  @JoinColumn()
-  vehicle: VehicleEntity;
+  @OneToMany(() => UserAccidentEntity, (userAccidents: UserAccidentEntity) => userAccidents.user)
+  userAccidents: UserAccidentEntity[];
 }
