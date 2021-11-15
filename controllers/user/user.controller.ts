@@ -1,7 +1,7 @@
 import { Connection, Repository } from 'typeorm';
 import { ResponseToolkit, Request, ServerRoute } from 'hapi';
 
-import { UserEntity } from '../../db/entities/user.entity';
+import { RoleType, UserEntity } from '../../db/entities/user.entity';
 import { isValidUser } from '../../validations';
 
 export const userController = (con: Connection): Array<ServerRoute> => {
@@ -19,7 +19,7 @@ export const userController = (con: Connection): Array<ServerRoute> => {
 
           return res.response(doc);
         } catch ({ message }) {
-          return res.response(message);
+          return res.response('Not Found').code(404);
         }
       }
     },
@@ -31,13 +31,24 @@ export const userController = (con: Connection): Array<ServerRoute> => {
           isValidUser(payload);
 
           const { fullName, email, document, address, vehiclePlate, vehicleModel } = payload as Partial<UserEntity>;
+
+          const userExist: UserEntity = await userRepo.findOne({ where: { email } });
+
+          if (userExist && userExist.role === RoleType.engaged) {
+            userExist.role = RoleType.client;
+
+            const doc = await userRepo.update(userExist.id, userExist);
+            
+            return res.response(doc).code(201);
+          }
+
           const user: Partial<UserEntity> = new UserEntity(fullName, email, document, address, vehiclePlate, vehicleModel);
-          
+
           const doc = await userRepo.save<Partial<UserEntity>>(user);
 
           return res.response(doc).code(201);
         } catch ({ message }) {
-          return res.response(message);
+          return res.response('Conflict').code(409);
         }
       }
     },
@@ -54,7 +65,7 @@ export const userController = (con: Connection): Array<ServerRoute> => {
 
           return res.response(doc);
         } catch ({ message }) {
-          return res.response(message);
+          return res.response('Not Found').code(404);
         }
       }
     },
@@ -64,7 +75,7 @@ export const userController = (con: Connection): Array<ServerRoute> => {
       handler: async ({ payload, params }: Request, res: ResponseToolkit, err?: Error) => {
         try {
           isValidUser(payload);
-          
+
           const { id } = params;
           const { fullName, email, document, address, vehiclePlate, vehicleModel } = payload as Partial<UserEntity>;
 
@@ -80,7 +91,7 @@ export const userController = (con: Connection): Array<ServerRoute> => {
 
           return res.response(user);
         } catch ({ message }) {
-          return res.response(message);
+          return res.response('Conflict').code(409);
         }
       }
     },
@@ -98,7 +109,7 @@ export const userController = (con: Connection): Array<ServerRoute> => {
 
           return res.response();
         } catch ({ message }) {
-          return res.response(message);
+          return res.response('Conflict').code(409);
         }
       }
     },

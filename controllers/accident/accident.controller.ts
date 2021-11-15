@@ -20,7 +20,7 @@ export const accidentController = (con: Connection): Array<ServerRoute> => {
 
           return res.response(doc);
         } catch ({ message }) {
-          return res.response(message);
+          return res.response('Not Found').code(404);
         }
       }
     },
@@ -30,39 +30,45 @@ export const accidentController = (con: Connection): Array<ServerRoute> => {
       handler: async ({ payload }: Request, res: ResponseToolkit, err?: Error) => {
         try {
           const { description } = payload as Partial<AccidentEntity>;
-          const { user, engaged } = payload as any;
+          const { user, engageds } = payload as any;
 
-          const foundUser: UserEntity = await userRepo.findOneOrFail({ where: { email: user.email } });
+          const foundUser: UserEntity = await userRepo.findOneOrFail({ where: { email: user.email, active: true } });
           if (!foundUser) return res.response('User not found').code(404)
 
-          let foundEngaged: UserEntity = await userRepo.findOne({ where: { email: engaged.email } });
+          let foundEngageds = [];
+          for await (const engaged of engageds) {
+            
+            const foundEngaged: UserEntity = await userRepo.findOne({ where: { email: engaged.email } });
 
+            if (!foundEngaged) {
+              isValidUser(engaged);
+              const {
+                fullName,
+                email,
+                document,
+                address,
+                vehiclePlate,
+                vehicleModel
+              } = engaged as Partial<UserEntity>;
 
-          if (!foundEngaged) {
-            isValidUser(engaged);
-            const {
-              fullName,
-              email,
-              document,
-              address,
-              vehiclePlate,
-              vehicleModel
-            } = engaged as Partial<UserEntity>;
+              const role = RoleType.engaged;
+              const user: Partial<UserEntity> = new UserEntity(
+                fullName,
+                email,
+                document,
+                address,
+                vehiclePlate,
+                vehicleModel,
+                role);
 
-            console.log("foundEngaged");
-            const role = RoleType.engaged;
-            const user: Partial<UserEntity> = new UserEntity(
-              fullName,
-              email,
-              document,
-              address,
-              vehiclePlate,
-              vehicleModel,
-              role);
+              const doc = await userRepo.save<Partial<UserEntity>>(user);
 
-            const doc = await userRepo.save<Partial<UserEntity>>(user);
-            foundEngaged = doc;
+              foundEngageds.push(doc);
+            } else {
+              foundEngageds.push(foundEngaged);
+            }
           }
+
 
           const accident = new AccidentEntity(description);
           const accidentDoc = await accidentRepo.save(accident);
@@ -70,12 +76,14 @@ export const accidentController = (con: Connection): Array<ServerRoute> => {
           const userAccident = new UserAccidentEntity(foundUser, accidentDoc);
           await userAccidentRepo.save(userAccident);
 
-          const engagedAccident = new UserAccidentEntity(foundEngaged, accidentDoc);
-          await userAccidentRepo.save(engagedAccident);
+          for await (const foundEngaged of foundEngageds) {
+            const engagedAccident = new UserAccidentEntity(foundEngaged, accidentDoc);
+            await userAccidentRepo.save(engagedAccident);
+          }
 
-          return res.response({ accident: accidentDoc, user, engaged });
+          return res.response({ accident: accidentDoc, user: foundUser, engageds: foundEngageds });
         } catch ({ message }) {
-          return res.response(message);
+          return res.response('Not Found').code(404);
         }
       }
     },
@@ -89,7 +97,7 @@ export const accidentController = (con: Connection): Array<ServerRoute> => {
 
           return res.response(doc);
         } catch ({ message }) {
-          return res.response(message);
+          return res.response('Not Found').code(404);
         }
       }
     },
